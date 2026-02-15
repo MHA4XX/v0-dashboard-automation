@@ -140,11 +140,12 @@ export function ImportForm({ onImport }: ImportFormProps) {
     setIsImporting(true)
     setImportStatus('idle')
     setBulkProgress(0)
-    const initialResults = urls.map((u) => ({ url: u, status: 'pending' as const }))
+    type BulkResult = { url: string; status: 'pending' | 'importing' | 'success' | 'error'; product?: ScrapedPreview; error?: string }
+    const initialResults: BulkResult[] = urls.map((u) => ({ url: u, status: 'pending' as const }))
     setBulkResults(initialResults)
 
     const importedProducts: Product[] = []
-    const newResults = [...initialResults]
+    const newResults: BulkResult[] = [...initialResults]
 
     for (let i = 0; i < urls.length; i++) {
       newResults[i] = { ...newResults[i], status: 'importing' }
