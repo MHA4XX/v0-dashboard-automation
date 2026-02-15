@@ -33,6 +33,7 @@ import {
   Send,
   Copy,
 } from 'lucide-react'
+import Image from 'next/image'
 
 interface OrderDetailProps {
   order: Order | null
@@ -163,9 +164,9 @@ export function OrderDetail({
             <div className="space-y-2">
               {order.items.map((item, idx) => (
                 <div key={idx} className="flex items-center gap-3 bg-secondary/50 rounded-lg p-3">
-                  <div className="w-12 h-12 bg-secondary rounded-lg overflow-hidden flex-shrink-0">
+                  <div className="w-12 h-12 bg-secondary rounded-lg overflow-hidden flex-shrink-0 relative">
                     {item.image ? (
-                      <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                      <Image src={item.image} alt={item.title} fill className="object-cover" sizes="48px" unoptimized />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <Package className="w-5 h-5 text-muted-foreground" />

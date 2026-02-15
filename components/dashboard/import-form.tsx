@@ -11,9 +11,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
+import Image from 'next/image'
 import {
   Download,
-  Link,
+  Link as LinkIcon,
   FileText,
   Loader2,
   CheckCircle,
@@ -209,7 +210,7 @@ export function ImportForm({ onImport }: ImportFormProps) {
       <Tabs defaultValue="url" className="w-full">
         <TabsList className="w-full bg-secondary">
           <TabsTrigger value="url" className="flex-1">
-            <Link className="w-4 h-4 mr-2" />
+            <LinkIcon className="w-4 h-4 mr-2" />
             Importar por URL
           </TabsTrigger>
           <TabsTrigger value="bulk" className="flex-1">
@@ -284,9 +285,9 @@ export function ImportForm({ onImport }: ImportFormProps) {
 
                   <div className="p-4 space-y-4">
                     <div className="flex gap-4">
-                      <div className="w-28 h-28 bg-secondary rounded-lg overflow-hidden flex-shrink-0">
+                      <div className="w-28 h-28 bg-secondary rounded-lg overflow-hidden flex-shrink-0 relative">
                         {previewProduct.images[0] ? (
-                          <img src={previewProduct.images[0]} alt={previewProduct.title} className="w-full h-full object-cover" />
+                          <Image src={previewProduct.images[0]} alt={previewProduct.title} fill className="object-cover" sizes="112px" unoptimized />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
                             <ImageIcon className="w-8 h-8 text-muted-foreground" />
@@ -487,7 +488,9 @@ export function ImportForm({ onImport }: ImportFormProps) {
                           {result.product ? (
                             <div className="flex items-center gap-2">
                               {result.product.images[0] && (
-                                <img src={result.product.images[0]} alt="" className="w-6 h-6 rounded object-cover flex-shrink-0" />
+                                <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0 relative">
+                                  <Image src={result.product.images[0]} alt="" fill className="object-cover" sizes="24px" unoptimized />
+                                </div>
                               )}
                               <span className="text-xs text-foreground truncate">{result.product.title}</span>
                               <Badge variant="secondary" className="text-[10px] flex-shrink-0">${result.product.price.toFixed(2)}</Badge>

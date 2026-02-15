@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
+import Image from 'next/image'
 import { X, Plus, ImageIcon, DollarSign, Tag, Package, ExternalLink, Truck, TrendingUp, TrendingDown } from 'lucide-react'
 
 interface ProductEditorProps {
@@ -298,10 +299,13 @@ export function ProductEditor({ product, onSave, onClose }: ProductEditorProps) 
                   key={`${image}-${index}`}
                   className="relative aspect-square bg-secondary rounded-lg overflow-hidden group"
                 >
-                  <img 
+                  <Image 
                     src={image || "/placeholder.svg"} 
                     alt={`Producto ${index + 1}`} 
-                    className="object-cover w-full h-full"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 33vw, 200px"
+                    unoptimized
                   />
                   <button
                     onClick={() =>

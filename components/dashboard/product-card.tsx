@@ -4,7 +4,7 @@ import type { Product } from '@/lib/types'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Edit, Trash2, Upload, Star, ExternalLink } from 'lucide-react'
+import { Edit, Trash2, Upload, Star, ExternalLink, Package } from 'lucide-react'
 import Image from 'next/image'
 
 interface ProductCardProps {
@@ -27,12 +27,20 @@ export function ProductCard({ product, onEdit, onDelete, onPublish }: ProductCar
   return (
     <Card className="bg-card border-border overflow-hidden group hover:border-primary/50 transition-colors">
       <div className="relative aspect-square bg-secondary">
-        <Image
-          src={product.images[0] || "/placeholder.svg"}
-          alt={product.title}
-          fill
-          className="object-cover"
-        />
+        {product.images[0] ? (
+          <Image
+            src={product.images[0]}
+            alt={product.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            unoptimized
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <Package className="w-8 h-8 text-muted-foreground" />
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         <div className="absolute bottom-3 left-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button

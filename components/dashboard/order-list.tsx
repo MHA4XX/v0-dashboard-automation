@@ -23,6 +23,7 @@ import {
   Ban,
   ShoppingBag,
 } from 'lucide-react'
+import Image from 'next/image'
 import { OrderDetail } from './order-detail'
 
 interface OrderListProps {
@@ -115,9 +116,9 @@ export function OrderList({
                   <TableCell>
                     <div className="flex items-center gap-1.5">
                       {order.items.slice(0, 2).map((item, idx) => (
-                        <div key={idx} className="w-7 h-7 rounded bg-secondary overflow-hidden flex-shrink-0">
+                        <div key={idx} className="w-7 h-7 rounded bg-secondary overflow-hidden flex-shrink-0 relative">
                           {item.image ? (
-                            <img src={item.image} alt="" className="w-full h-full object-cover" />
+                            <Image src={item.image} alt="" fill className="object-cover" sizes="28px" unoptimized />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               <Package className="w-3 h-3 text-muted-foreground" />

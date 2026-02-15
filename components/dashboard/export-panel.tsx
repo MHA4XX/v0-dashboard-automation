@@ -20,6 +20,8 @@ import {
   ShoppingBag,
 } from 'lucide-react'
 import Image from 'next/image'
+import { useEffect } from 'react'
+import { loadShopifySettings } from '@/hooks/use-orders'
 
 interface ExportPanelProps {
   products: Product[]
@@ -33,6 +35,14 @@ export function ExportPanel({ products, onExport }: ExportPanelProps) {
   const [isExporting, setIsExporting] = useState(false)
   const [exportStatus, setExportStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [isConnected, setIsConnected] = useState(false)
+
+  // Load saved Shopify settings on mount
+  useEffect(() => {
+    const saved = loadShopifySettings()
+    if (saved.storeUrl) setShopifyStore(saved.storeUrl)
+    if (saved.apiToken) setApiKey(saved.apiToken)
+    if (saved.connected) setIsConnected(true)
+  }, [])
 
   const readyProducts = products.filter((p) => p.status === 'ready' || p.status === 'draft')
 
@@ -80,20 +90,20 @@ export function ExportPanel({ products, onExport }: ExportPanelProps) {
         <CardHeader>
           <CardTitle className="text-foreground flex items-center gap-2">
             <Store className="w-5 h-5 text-primary" />
-            Shopify Connection
+            Conexion Shopify
           </CardTitle>
           <CardDescription>
-            Connect your Shopify store to publish products directly
+            Conecta tu tienda Shopify para publicar productos directamente
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {!isConnected ? (
             <>
               <div className="space-y-2">
-                <Label htmlFor="store-url">Store URL</Label>
+                <Label htmlFor="store-url">URL de la Tienda</Label>
                 <Input
                   id="store-url"
-                  placeholder="your-store.myshopify.com"
+                  placeholder="tu-tienda.myshopify.com"
                   value={shopifyStore}
                   onChange={(e) => setShopifyStore(e.target.value)}
                   className="bg-secondary border-border"
@@ -120,12 +130,12 @@ export function ExportPanel({ products, onExport }: ExportPanelProps) {
                 {isExporting ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Connecting...
+                    Conectando...
                   </>
                 ) : (
                   <>
                     <Link2 className="w-4 h-4 mr-2" />
-                    Connect Store
+                    Conectar Tienda
                   </>
                 )}
               </Button>
@@ -140,7 +150,7 @@ export function ExportPanel({ products, onExport }: ExportPanelProps) {
                   <p className="font-medium text-foreground">{shopifyStore}</p>
                   <p className="text-sm text-muted-foreground flex items-center gap-1">
                     <CheckCircle className="w-3 h-3 text-primary" />
-                    Connected
+                    Conectado
                   </p>
                 </div>
               </div>
@@ -149,7 +159,7 @@ export function ExportPanel({ products, onExport }: ExportPanelProps) {
                 onClick={() => setIsConnected(false)}
                 className="w-full"
               >
-                Disconnect
+                Desconectar
               </Button>
             </div>
           )}
@@ -162,14 +172,14 @@ export function ExportPanel({ products, onExport }: ExportPanelProps) {
             <div>
               <CardTitle className="text-foreground flex items-center gap-2">
                 <Upload className="w-5 h-5 text-primary" />
-                Select Products to Export
+                Seleccionar Productos para Exportar
               </CardTitle>
               <CardDescription>
-                Choose which products to publish to your Shopify store
+                Elige que productos publicar en tu tienda Shopify
               </CardDescription>
             </div>
             <Button variant="ghost" size="sm" onClick={handleSelectAll}>
-              {selectedProducts.length === readyProducts.length ? 'Deselect All' : 'Select All'}
+              {selectedProducts.length === readyProducts.length ? 'Deseleccionar Todo' : 'Seleccionar Todo'}
             </Button>
           </div>
         </CardHeader>
@@ -191,14 +201,21 @@ export function ExportPanel({ products, onExport }: ExportPanelProps) {
                       checked={selectedProducts.includes(product.id)}
                       onCheckedChange={() => handleToggleProduct(product.id)}
                     />
-                    <div className="w-12 h-12 rounded-lg bg-muted overflow-hidden flex-shrink-0">
-                      <Image
-                        src={product.images[0] || "/placeholder.svg"}
-                        alt={product.title}
-                        width={48}
-                        height={48}
-                        className="object-cover w-full h-full"
-                      />
+                    <div className="w-12 h-12 rounded-lg bg-muted overflow-hidden flex-shrink-0 relative">
+                      {product.images[0] ? (
+                        <Image
+                          src={product.images[0]}
+                          alt={product.title}
+                          fill
+                          className="object-cover"
+                          sizes="48px"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <ShoppingBag className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">
@@ -222,8 +239,8 @@ export function ExportPanel({ products, onExport }: ExportPanelProps) {
                 ))
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-muted-foreground">No products available for export</p>
-                  <p className="text-sm text-muted-foreground">Import products first</p>
+                  <p className="text-muted-foreground">No hay productos disponibles para exportar</p>
+                  <p className="text-sm text-muted-foreground">Importa productos primero</p>
                 </div>
               )}
             </div>
@@ -237,12 +254,12 @@ export function ExportPanel({ products, onExport }: ExportPanelProps) {
             {isExporting ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Exporting...
+                Exportando...
               </>
             ) : (
               <>
                 <Upload className="w-4 h-4 mr-2" />
-                Export {selectedProducts.length} Product{selectedProducts.length !== 1 ? 's' : ''} to Shopify
+                Exportar {selectedProducts.length} Producto{selectedProducts.length !== 1 ? 's' : ''} a Shopify
               </>
             )}
           </Button>
@@ -253,7 +270,7 @@ export function ExportPanel({ products, onExport }: ExportPanelProps) {
         <Alert className="lg:col-span-2 bg-primary/10 border-primary/20">
           <CheckCircle className="w-4 h-4 text-primary" />
           <AlertDescription className="text-foreground">
-            Products exported successfully! They are now available in your Shopify store.
+            Productos exportados exitosamente. Ya estan disponibles en tu tienda Shopify.
           </AlertDescription>
         </Alert>
       )}
@@ -262,7 +279,7 @@ export function ExportPanel({ products, onExport }: ExportPanelProps) {
         <Alert variant="destructive" className="lg:col-span-2">
           <AlertCircle className="w-4 h-4" />
           <AlertDescription>
-            Failed to export products. Please check your connection and try again.
+            Error al exportar productos. Verifica tu conexion e intenta de nuevo.
           </AlertDescription>
         </Alert>
       )}
