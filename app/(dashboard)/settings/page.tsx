@@ -1,89 +1,152 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Header } from '@/components/dashboard/header'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Switch } from '@/components/ui/switch'
-import { Separator } from '@/components/ui/separator'
-import { Badge } from '@/components/ui/badge'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  Store,
-  DollarSign,
-  Bell,
-  Globe,
-  Save,
-  CheckCircle,
-  Zap,
-  Hand,
-  Link2,
-  Loader2,
-  ShieldCheck,
-} from 'lucide-react'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { loadShopifySettings, saveShopifySettings } from '@/hooks/use-orders'
-import type { ShopifySettings } from '@/lib/types'
 
-const SETTINGS_KEY = 'dropship-settings'
-
-interface AppSettings {
-  defaultMarkup: string
-  currency: string
-  autoPublish: boolean
-  emailNotifications: boolean
-  importNotifications: boolean
-  language: string
-}
-
-const defaultAppSettings: AppSettings = {
-  defaultMarkup: '50',
-  currency: 'USD',
-  autoPublish: false,
-  emailNotifications: true,
-  importNotifications: true,
-  language: 'es',
-}
+const STORAGE_KEY = 'shopify-config'
 
 export default function SettingsPage() {
-  const [saved, setSaved] = useState(false)
-  const [settings, setSettings] = useState<AppSettings>(defaultAppSettings)
-  const [shopifySettings, setShopifySettings] = useState<ShopifySettings>({
-    storeUrl: '',
-    apiToken: '',
-    webhookUrl: '',
-    orderMode: 'manual',
-    connected: false,
-  })
-  const [isHydrated, setIsHydrated] = useState(false)
-  const [testingConnection, setTestingConnection] = useState(false)
-  const [connectionResult, setConnectionResult] = useState<'idle' | 'success' | 'error'>('idle')
+  const [storeUrl, setStoreUrl] = useState('')
+  const [apiToken, setApiToken] = useState('')
+  const [markup, setMarkup] = useState('50')
+  const [autoPublish, setAutoPublish] = useState(false)
 
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState('')
+  const [importing, setImporting] = useState(false)
+
+  // 🔹 Cargar configuración guardada
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(SETTINGS_KEY)
-      if (stored) setSettings({ ...defaultAppSettings, ...JSON.parse(stored) })
-    } catch {}
-    setShopifySettings(loadShopifySettings())
-    setIsHydrated(true)
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      setStoreUrl(parsed.storeUrl || '')
+      setApiToken(parsed.apiToken || '')
+      setMarkup(parsed.markup || '50')
+      setAutoPublish(parsed.autoPublish || false)
+    }
   }, [])
 
-  const handleSave = () => {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
-    saveShopifySettings(shopifySettings)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
+  // 🔹 Guardar configuración
+  const saveSettings = () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ storeUrl, apiToken, markup, autoPublish })
+    )
+    setMessage('Configuración guardada correctamente ✅')
   }
 
-  const handleTestConnection = () => {
+  // 🔹 Test conexión REAL
+  const testConnection = async () => {
+    setLoading(true)
+    setMessage('')
+
+    try {
+      const res = await fetch('/api/shopify/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ storeUrl, apiToken }),
+      })
+
+      if (!res.ok) throw new Error()
+
+      setMessage('Conexión exitosa con Shopify ✅')
+    } catch {
+      setMessage('Error en la conexión ❌ Verifica datos')
+    }
+
+    setLoading(false)
+  }
+
+  // 🔹 Importar producto demo
+  const importDemoProduct = async () => {
+    setImporting(true)
+    setMessage('')
+
+    const demoProduct = {
+      title: 'Producto Demo Dropshipping',
+      description: '<strong>Producto importado automáticamente</strong>',
+      price: 20,
+      images: [
+        'https://via.placeholder.com/600x600.png?text=Producto+Demo'
+      ],
+    }
+
+    try {
+      const res = await fetch('/api/shopify/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          storeUrl,
+          apiToken,
+          product: demoProduct,
+          markup,
+          autoPublish,
+        }),
+      })
+
+      if (!res.ok) throw new Error()
+
+      setMessage('Producto importado correctamente 🚀')
+    } catch {
+      setMessage('Error al importar producto ❌')
+    }
+
+    setImporting(false)
+  }
+
+  return (
+    <div style={{ maxWidth: 500, margin: '40px auto', fontFamily: 'Arial' }}>
+      <h2>Integración Shopify</h2>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
+        <input
+          placeholder="tu-tienda.myshopify.com"
+          value={storeUrl}
+          onChange={(e) => setStoreUrl(e.target.value)}
+        />
+
+        <input
+          type="password"
+          placeholder="shpat_xxxxxxxxx"
+          value={apiToken}
+          onChange={(e) => setApiToken(e.target.value)}
+        />
+
+        <input
+          type="number"
+          placeholder="Markup %"
+          value={markup}
+          onChange={(e) => setMarkup(e.target.value)}
+        />
+
+        <label>
+          <input
+            type="checkbox"
+            checked={autoPublish}
+            onChange={(e) => setAutoPublish(e.target.checked)}
+          />
+          Auto publicar productos
+        </label>
+
+        <button onClick={saveSettings}>
+          Guardar configuración
+        </button>
+
+        <button onClick={testConnection} disabled={loading}>
+          {loading ? 'Probando conexión...' : 'Probar conexión'}
+        </button>
+
+        <button onClick={importDemoProduct} disabled={importing}>
+          {importing ? 'Importando...' : 'Importar producto demo'}
+        </button>
+
+        {message && (
+          <p style={{ marginTop: 10 }}>{message}</p>
+        )}
+      </div>
+    </div>
+  )
+        }  const handleTestConnection = () => {
     setTestingConnection(true)
     setConnectionResult('idle')
     // Simulate connection test
