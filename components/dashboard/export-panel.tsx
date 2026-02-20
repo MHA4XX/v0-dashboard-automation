@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import type { Product } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,6 +20,7 @@ import {
   ShoppingBag,
 } from 'lucide-react'
 import Image from 'next/image'
+import { useEffect } from 'react'
 import { loadShopifySettings } from '@/hooks/use-orders'
 
 interface ExportPanelProps {
